@@ -4,7 +4,7 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
-from models import setup_db, Question
+from models import setup_db, Question, Category
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -36,6 +36,14 @@ class TriviaTestCase(unittest.TestCase):
     def tearDown(self):
         """Executed after reach test"""
         pass
+
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['categories'])
 
     def test_get_paginated_questions(self):
         res = self.client().get('/questions')
