@@ -100,21 +100,24 @@ def create_app(test_config=None):
                     'total_questions': len(selection.all())
                 })
             else:
-                question = Question(question=new_question, answer=new_answer,
-                                    category=new_category, difficulty=new_difficulty)
-                question.insert()
+                if (new_question is None) or (new_answer is None):
+                    abort(422)
+                else:
+                    question = Question(question=new_question, answer=new_answer,
+                                        category=new_category, difficulty=new_difficulty)
 
-                selection = Question.query.order_by(Question.id).all()
-                current_questions = paginate_questions(request, selection)
+                    question.insert()
 
-                return jsonify({
-                    'success': True,
-                    'created': question.id,
-                    'questions': current_questions,
-                    'total_questions': len(Question.query.all())
-                })
+                    selection = Question.query.order_by(Question.id).all()
+                    current_questions = paginate_questions(request, selection)
 
-        except:
+                    return jsonify({
+                        'success': True,
+                        'created': question.id,
+                        'questions': current_questions,
+                        'total_questions': len(Question.query.all())
+                    })
+        except Exception:
             abort(422)
 
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
@@ -145,6 +148,8 @@ def create_app(test_config=None):
         else:
             questions = Question.query.filter(
                 Question.category == quiz_category['id']).order_by(Question.id).all()
+            if(not len(questions)):
+                abort(404)
         filtered_questions = list(filter(
             lambda question: question.id not in previous_questions, questions))
 

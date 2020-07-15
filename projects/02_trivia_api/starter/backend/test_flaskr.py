@@ -20,7 +20,7 @@ class TriviaTestCase(unittest.TestCase):
         setup_db(self.app, self.database_path)
 
         self.new_question = {
-            'title': 'FSND',
+            'question': 'FSND',
             'answer': 'Full Stack Nano Degree',
             'category': 1,
             'difficulty': 1
@@ -102,12 +102,26 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['question'])
 
-    def test_422_question_creation_fails(self):
-        result = self.client().post('/questions', json=self.new_question)
-        json.loads(result.data)
-        pass
+    def test_404_get_next_question_fails(self):
+        result = self.client().post('/quizzes',
+                                    json={
+                                        'previous_questions': [],
+                                        'quiz_category': {'id': 1000}
+                                    })
+        data = json.loads(result.data)
 
-    def test_404_unavailable_question(self):
+        self.assertEqual(result.status_code, 404)
+        self.assertEqual(data['success'], False)
+
+    def test_422_question_creation_fails(self):
+        result = self.client().post('/questions', json={'question': 'ababa'})
+        data = json.loads(result.data)
+
+        self.assertEqual(result.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unprocessable')
+
+    def test_422_question_deletion_fails(self):
         result = self.client().delete('/questions/1000')
         data = json.loads(result.data)
 
